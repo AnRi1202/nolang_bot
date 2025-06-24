@@ -104,3 +104,5 @@ secrets/
 credentials/
 *.key
 *.pem
+
+sa.json
