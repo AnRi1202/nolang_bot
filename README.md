@@ -36,10 +36,44 @@ poetry install
 
 ### 2. 環境変数の設定
 
+#### 方法1: 環境変数として設定
+
 ```bash
 # OpenAI API キーを設定
 export OPENAI_API_KEY="your-openai-api-key-here"
 ```
+
+#### 方法2: .env ファイルを使用（推奨）
+
+1. `.env.example` ファイルを参考に `.env` ファイルを作成：
+
+```bash
+# .env ファイルを作成
+cp .env.example .env
+```
+
+2. `.env` ファイルを編集して実際の値を設定：
+
+```env
+# OpenAI API Key (必須)
+# https://platform.openai.com/api-keys から取得
+OPENAI_API_KEY=your-openai-api-key-here
+
+# Google Sheets ID (オプション - 現在はハードコード済み)
+# カスタムスプレッドシートを使用する場合のみ設定
+# SPREADSHEET_ID=your-spreadsheet-id-here
+
+# データベース設定 (Docker Compose使用時)
+POSTGRES_PASSWORD=example
+POSTGRES_DB=nolang_bot
+POSTGRES_USER=postgres
+
+# アプリケーション設定
+PYTHONPATH=/opt/nolang-bot
+PYTHONUNBUFFERED=1
+```
+
+**注意**: `.env` ファイルは `.gitignore` に含まれているため、GitHubにアップロードされません。
 
 ### 3. Google Service Account の設定 (オプション)
 

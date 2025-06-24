@@ -18,21 +18,22 @@ VECTORS = None
 METADATA = None
 CLIENT = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
+
 def load_index_and_metadata():
     """インデックスとメタデータを読み込む"""
     global NN_MODEL, VECTORS, METADATA
-    
+
     try:
         # モデルの読み込み
         with open("nn_model.pkl", "rb") as f:
             data = pickle.load(f)
-            NN_MODEL = data['model']
-            VECTORS = data['vectors']
-        
+            NN_MODEL = data["model"]
+            VECTORS = data["vectors"]
+
         # メタデータの読み込み
         with open("metadata.json", "r", encoding="utf-8") as f:
             METADATA = json.load(f)
-            
+
         print(f"モデル読み込み完了: {len(VECTORS)}件のベクトル")
         print(f"メタデータ読み込み完了: {len(METADATA)}件")
     except FileNotFoundError as e:
@@ -42,13 +43,15 @@ def load_index_and_metadata():
     except Exception as e:
         print(f"インデックス読み込みエラー: {e}")
         return False
-    
+
     return True
+
 
 class Query(BaseModel):
     question: str
     email: str = None  # ユーザーのメールアドレス（オプション）
     inquiry_type: str = None  # 問い合わせタイプ（オプション）
+
 
 class Response(BaseModel):
     answer: str
@@ -57,36 +60,38 @@ class Response(BaseModel):
     assigned_team: str = None  # 担当チーム
     related_cases: list[dict] = []  # 関連する過去の事例
 
+
 def extract_email_from_text(text: str) -> str:
     """テキストからメールアドレスを抽出"""
-    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    email_pattern = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"
     emails = re.findall(email_pattern, text)
     return emails[0] if emails else None
+
 
 def retrieve(question: str, k: int = 3) -> list[dict]:
     """
     質問に対して関連するコンテキストを検索
-    
+
     Args:
         question: 検索する質問
         k: 返すコンテキストの数
-        
+
     Returns:
         関連するコンテキストのリスト
     """
     if NN_MODEL is None or METADATA is None:
         raise HTTPException(status_code=500, detail="インデックスが読み込まれていません")
-    
+
     try:
         # 質問を埋め込みベクトルに変換
         vec = embed_texts([question])
         if not vec:
             raise HTTPException(status_code=500, detail="埋め込みベクトルの作成に失敗しました")
-        
+
         # scikit-learn検索
         query_vector = np.array([vec[0]]).astype("float32")
         distances, indices = NN_MODEL.kneighbors(query_vector, n_neighbors=min(k, len(VECTORS)))
-        
+
         # 検索結果を返す
         results = []
         for i, distance in zip(indices[0], distances[0]):
@@ -95,12 +100,13 @@ def retrieve(question: str, k: int = 3) -> list[dict]:
                 # コサイン類似度に変換（NearestNeighborsはコサイン距離を返す）
                 context["similarity_score"] = float(1 - distance)
                 results.append(context)
-        
+
         return results
-        
+
     except Exception as e:
         print(f"検索エラー: {e}")
         raise HTTPException(status_code=500, detail=f"検索に失敗しました: {str(e)}")
+
 
 def find_similar_cases_by_tag(tag: str, k: int = 3) -> list[dict]:
     """
@@ -108,26 +114,31 @@ def find_similar_cases_by_tag(tag: str, k: int = 3) -> list[dict]:
     """
     if METADATA is None:
         return []
-    
+
     similar_cases = []
     for item in METADATA:
         if item.get("Tag") == tag:
-            similar_cases.append({
-                "question": item.get("Question", ""),
-                "answer": item.get("Answer", ""),
-                "date": item.get("UpdatedAt", ""),
-                "status": item.get("Status", "未対応"),
-                "original_email": item.get("OriginalEmail", "")
-            })
-    
+            similar_cases.append(
+                {
+                    "question": item.get("Question", ""),
+                    "answer": item.get("Answer", ""),
+                    "date": item.get("UpdatedAt", ""),
+                    "status": item.get("Status", "未対応"),
+                    "original_email": item.get("OriginalEmail", ""),
+                }
+            )
+
     # 最新の事例を優先
     similar_cases.sort(key=lambda x: x.get("date", ""), reverse=True)
     return similar_cases[:k]
 
-def determine_contact_email_with_tag(contexts: list[dict], user_email: str = None, inquiry_type: str = None) -> tuple[str, str]:
+
+def determine_contact_email_with_tag(
+    contexts: list[dict], user_email: str = None, inquiry_type: str = None
+) -> tuple[str, str]:
     """
     コンテキストとタグに基づいて推奨連絡先と担当チームを決定
-    
+
     Returns:
         tuple: (email, team_name)
     """
@@ -135,42 +146,44 @@ def determine_contact_email_with_tag(contexts: list[dict], user_email: str = Non
         tag = contexts[0]["Tag"]
         contact_info = get_contact_info_by_tag(tag)
         return contact_info["email"], contact_info["担当者"]
-    
+
     # デフォルトのサポートメール
     return "support@nolang.ai", "一般サポート"
 
-def generate_answer_with_context(question: str, contexts: list[dict], user_email: str = None, inquiry_type: str = None) -> str:
+
+def generate_answer_with_context(
+    question: str, contexts: list[dict], user_email: str = None, inquiry_type: str = None
+) -> str:
     """
     コンテキストとタグ情報に基づいて回答を生成
     """
     if not contexts:
         return "申し訳ございませんが、ご質問に関連する情報が見つかりませんでした。詳細についてはサポートチームにお問い合わせください。"
-    
+
     # 最も関連性の高いコンテキストのタグを取得
     primary_tag = contexts[0].get("Tag", "一般問い合わせ")
-    
+
     # 同じタグの過去事例を検索
     similar_cases = find_similar_cases_by_tag(primary_tag)
-    
+
     # コンテキストブロックを作成
     context_block = "\n\n".join(
-        f"Q: {c['Question']}\nA: {c['Answer']}\nタグ: {c.get('Tag', 'N/A')}" 
-        for c in contexts[:3]
+        f"Q: {c['Question']}\nA: {c['Answer']}\nタグ: {c.get('Tag', 'N/A')}" for c in contexts[:3]
     )
-    
+
     # 過去事例の情報を追加
     past_cases_info = ""
     if similar_cases:
         past_cases_info = "\n\n### 関連する過去の対応事例:\n"
         for case in similar_cases[:2]:  # 最新2件
             past_cases_info += f"- {case['question'][:50]}... (対応状況: {case['status']})\n"
-    
+
     # システムプロンプト
     sys_prompt = f"""あなたはNoLangのサポートAIです。
 ユーザーの質問には **以下のコンテキストの範囲内で忠実に** 日本語で答えてください。
 
 問い合わせタグ: {primary_tag}
-担当部署: {get_contact_info_by_tag(primary_tag)['担当者']}
+担当部署: {get_contact_info_by_tag(primary_tag)["担当者"]}
 
 重要なルール:
 1. コンテキストと過去事例に基づいて正確に回答してください
@@ -182,7 +195,7 @@ def generate_answer_with_context(question: str, contexts: list[dict], user_email
     # ユーザー情報を追加
     user_info = f"\nユーザーメール: {user_email}" if user_email else ""
     inquiry_info = f"\n問い合わせタイプ: {inquiry_type}" if inquiry_type else ""
-    
+
     prompt = f"""{sys_prompt}
 
 ### コンテキスト
@@ -200,33 +213,35 @@ def generate_answer_with_context(question: str, contexts: list[dict], user_email
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1,
-            max_tokens=1000
+            max_tokens=1000,
         )
-        
+
         generated_answer = resp.choices[0].message.content
-        
+
         # 担当部署の連絡先情報を追加
         contact_info = get_contact_info_by_tag(primary_tag)
         contact_footer = f"\n\n詳細についてはお気軽に{contact_info['担当者']}（{contact_info['email']}）までお問い合わせください。"
-        
+
         return generated_answer + contact_footer
-        
+
     except Exception as e:
         print(f"LLM回答生成エラー: {e}")
         return "申し訳ございませんが、回答の生成中にエラーが発生しました。しばらく後にもう一度お試しいただくか、サポートチームにお問い合わせください。"
+
 
 @app.on_event("startup")
 async def startup_event():
     """アプリケーション起動時の処理"""
     print("NoLang Support Bot を起動中...")
-    
+
     # 環境変数チェック
     if not os.environ.get("OPENAI_API_KEY"):
         print("警告: OPENAI_API_KEY環境変数が設定されていません")
-    
+
     # インデックスとメタデータの読み込み
     if not load_index_and_metadata():
         print("警告: インデックスの読み込みに失敗しました")
+
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -328,44 +343,48 @@ async def root():
     """
     return html_content
 
+
 @app.post("/ask", response_model=Response)
 async def ask(q: Query):
     """質問に対して回答を生成"""
     try:
         print(f"質問受信: {q.question}")
-        
+
         # 関連するコンテキストを検索
         contexts = retrieve(q.question, k=5)
-        
+
         if not contexts:
             return Response(
                 answer="申し訳ございませんが、関連する情報が見つかりませんでした。",
                 sources=[],
                 suggested_contact="support@nolang.ai",
-                assigned_team="一般サポート"
+                assigned_team="一般サポート",
             )
-        
+
         # 回答を生成
         answer = generate_answer_with_context(q.question, contexts, q.email, q.inquiry_type)
-        
+
         # 担当者情報を決定
-        suggested_contact, assigned_team = determine_contact_email_with_tag(contexts, q.email, q.inquiry_type)
-        
+        suggested_contact, assigned_team = determine_contact_email_with_tag(
+            contexts, q.email, q.inquiry_type
+        )
+
         # 関連する過去事例を取得
         primary_tag = contexts[0].get("Tag", "一般問い合わせ") if contexts else "一般問い合わせ"
         related_cases = find_similar_cases_by_tag(primary_tag, k=3)
-        
+
         return Response(
             answer=answer,
             sources=contexts,
             suggested_contact=suggested_contact,
             assigned_team=assigned_team,
-            related_cases=related_cases
+            related_cases=related_cases,
         )
-        
+
     except Exception as e:
         print(f"エラー: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/health")
 async def health_check():
@@ -376,9 +395,11 @@ async def health_check():
         "model_loaded": NN_MODEL is not None,
         "metadata_loaded": METADATA is not None,
         "total_vectors": len(VECTORS) if VECTORS is not None else 0,
-        "total_metadata": len(METADATA) if METADATA else 0
+        "total_metadata": len(METADATA) if METADATA else 0,
     }
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

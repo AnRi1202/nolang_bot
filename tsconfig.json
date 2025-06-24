@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+      "target": "es2017",
+      "lib": ["es2017"],
+      "module": "none",
+      "outDir": "dist",         // claspはここを参照
+      "rootDir": "ts",
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "types": ["google-apps-script"]
+    },
+    "include": ["ts/**/*"]
+  }

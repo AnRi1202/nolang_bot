@@ -1,13 +1,19 @@
-version: "3.9"
 services:
   app:
-    build: .
-    env_file: .env               # 秘匿値はここで注入
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nolang-bot:latest
+    env_file: .env               # 環境変数ファイル（.env.exampleをコピーして作成）
     ports:
-      - "8000:8000"
+      - "8001:8001"
     volumes:
-      - .:/usr/src/app           # ホットリロード用
-    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+      - .:/home/user/nolang-bot        # ホットリロード用
+      - ~/.gitconfig:/home/user/.gitconfig:ro
+      - ~/.claude:/home/user/.claude:ro
+    command: /bin/bash           # 開発用にbashを起動
+    stdin_open: true             # docker run -i
+    tty: true                    # docker run -t
   db:
     image: postgres:16
     environment:

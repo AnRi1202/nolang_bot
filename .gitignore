@@ -12,7 +12,8 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+dist/*
+!dist/appsscript.json
 downloads/
 eggs/
 .eggs/
@@ -106,3 +107,11 @@ credentials/
 *.pem
 
 sa.json
+
+*.png
+
+client_secret_866283821140-np9nnvbt25trt5p02jt0iljjtc5nhavu.apps.googleusercontent.com.json
+
+*.txt
+*.csv
+node_modules/

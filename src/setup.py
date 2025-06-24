@@ -17,17 +17,19 @@ import sys
 import json
 from pathlib import Path
 
+
 def print_header():
     """ヘッダーを表示"""
     print("=" * 60)
     print("🤖 NoLang Support Bot セットアップ")
     print("=" * 60)
 
+
 def check_openai_key():
     """OpenAI API Keyの確認"""
     print("\n📋 1. OpenAI API Key の確認")
     api_key = os.environ.get("OPENAI_API_KEY")
-    
+
     if api_key:
         print(f"✅ OpenAI API Key: {api_key[:8]}...{api_key[-4:]}")
         return True
@@ -37,10 +39,11 @@ def check_openai_key():
         print("export OPENAI_API_KEY='your-api-key-here'")
         return False
 
+
 def check_google_credentials():
     """Google Service Account認証の確認"""
     print("\n📋 2. Google Service Account の確認")
-    
+
     if Path("sa.json").exists():
         try:
             with open("sa.json", "r") as f:
@@ -61,12 +64,14 @@ def check_google_credentials():
         print("6. Google Sheetsでサービスアカウントのメールアドレスに閲覧権限を付与")
         return False
 
+
 def test_google_sheets_connection():
     """Google Sheets接続テスト"""
     print("\n📋 3. Google Sheets 接続テスト")
-    
+
     try:
         from loader import load_sheet
+
         df = load_sheet()
         print(f"✅ Google Sheets接続成功: {len(df)}件のデータを取得")
         print(f"列名: {list(df.columns)}")
@@ -82,15 +87,17 @@ def test_google_sheets_connection():
         print("- SPREADSHEET_IDが正しいか")
         return False
 
+
 def test_embedding_creation():
     """埋め込みベクトル作成テスト"""
     print("\n📋 4. 埋め込みベクトル作成テスト")
-    
+
     try:
         from embed import embed_texts
+
         test_text = ["テストメッセージ"]
         vectors = embed_texts(test_text)
-        
+
         if vectors and len(vectors) > 0:
             print(f"✅ 埋め込みベクトル作成成功: 次元数 {len(vectors[0])}")
             return True
@@ -101,26 +108,27 @@ def test_embedding_creation():
         print(f"❌ 埋め込みベクトル作成エラー: {e}")
         return False
 
+
 def run_setup():
     """セットアップを実行"""
     print_header()
-    
+
     all_checks_passed = True
-    
+
     # 各チェックを実行
     checks = [
         check_openai_key,
         check_google_credentials,
         test_google_sheets_connection,
-        test_embedding_creation
+        test_embedding_creation,
     ]
-    
+
     for check in checks:
         if not check():
             all_checks_passed = False
-    
+
     print("\n" + "=" * 60)
-    
+
     if all_checks_passed:
         print("🎉 セットアップ完了！")
         print("\n次のステップ:")
@@ -131,9 +139,10 @@ def run_setup():
     else:
         print("⚠️  セットアップに問題があります")
         print("上記のエラーを修正してから再度実行してください")
-    
+
     return all_checks_passed
+
 
 if __name__ == "__main__":
     success = run_setup()
-    sys.exit(0 if success else 1) 
+    sys.exit(0 if success else 1)
