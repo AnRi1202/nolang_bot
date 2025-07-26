@@ -1,4 +1,4 @@
-.PHONY: install format lint test clean run help dev-install
+.PHONY: install format lint test clean run help dev-install ts-compile ts-watch ts-clean
 
 # Variables
 PYTHON = python
@@ -31,6 +31,11 @@ help:
 	@echo "  clasp-list   - List Apps Script projects"
 	@echo "  clasp-clone  - Clone existing Apps Script"
 	@echo "  clasp-watch  - Watch and auto-push changes"
+	@echo ""
+	@echo "TypeScript commands:"
+	@echo "  ts-compile   - Compile TypeScript to JavaScript"
+	@echo "  ts-watch     - Watch TypeScript files and auto-compile"
+	@echo "  ts-clean     - Clean compiled JavaScript files"
 
 # Install dependencies
 install:
@@ -135,4 +140,14 @@ clasp-clone:
 	npx $(CLASP) clone
 
 clasp-watch:
-	npx $(CLASP) push --watch 
+	npx $(CLASP) push --watch
+
+# TypeScript commands
+ts-compile:
+	npx tsc --target es2015 --module commonjs
+
+ts-watch:
+	npx tsc --target es2015 --module commonjs --watch
+
+ts-clean:
+	rm -rf js/*.js js/*.d.ts js/*.js.map 

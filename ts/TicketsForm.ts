@@ -1,3 +1,5 @@
+import { API_CONFIG, EMAIL_CONFIG } from './config';
+
 function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit): void {
   const DEBUG = true;
 
@@ -22,7 +24,7 @@ function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit): void {
   });
   if (DEBUG) Logger.log('[3] prompt(抜粋)\n' + prompt.slice(0, 300) + '...');
 
-  const difyApiKey = PropertiesService.getScriptProperties().getProperty('DIFY_API_KEY');
+  const difyApiKey = PropertiesService.getScriptProperties().getProperty(API_CONFIG.DIFY_API_KEY_PROPERTY);
   const payload = {
     inputs: { category, form_data: JSON.stringify(kvPairs) },
     query: prompt,
@@ -34,7 +36,7 @@ function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit): void {
 
   let res, body, replyText;
   try {
-    res = UrlFetchApp.fetch('https://api.dify.ai/v1/workflows/run', {
+    res = UrlFetchApp.fetch(API_CONFIG.DIFY_BASE_URL, {
       method: 'post',
       contentType: 'application/json',
       headers: { Authorization: 'Bearer ' + difyApiKey },
@@ -56,7 +58,7 @@ function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit): void {
 
   GmailApp.createDraft(
     email,
-    '【NoLangサポート】お問い合わせありがとうございます',
+    EMAIL_CONFIG.SUBJECT,
     replyText
   );
   if (DEBUG) Logger.log('[6] Draft 作成完了: ' + email);

@@ -2,7 +2,8 @@
     "compilerOptions": {
       "target": "es2017",
       "lib": ["es2017"],
-      "module": "none",
+      "module": "esnext",
+      "moduleResolution": "node",
       "outDir": "dist",         // claspはここを参照
       "rootDir": "ts",
       "strict": true,
