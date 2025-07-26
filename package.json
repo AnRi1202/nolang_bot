@@ -1,0 +1,30 @@
+{
+  "name": "nolang-bot",
+  "version": "1.0.0",
+  "description": "NoLangのサポート問い合わせに自動対応するRAG（Retrieval-Augmented Generation）ベースのチャットボットです。",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnRi1202/nolang_bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AnRi1202/nolang_bot/issues"
+  },
+  "homepage": "https://github.com/AnRi1202/nolang_bot#readme",
+  "devDependencies": {
+    "@google/clasp": "^3.0.6-alpha",
+    "@types/google-apps-script": "^1.0.99",
+    "esbuild": "^0.25.8",
+    "typescript": "^5.8.3"
+  }
+} 
