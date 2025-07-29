@@ -12,8 +12,8 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/*
-!dist/appsscript.json
+# dist/*
+# !dist/appsscript.json
 downloads/
 eggs/
 .eggs/
