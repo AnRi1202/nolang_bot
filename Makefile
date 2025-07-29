@@ -144,10 +144,10 @@ clasp-watch:
 
 # TypeScript commands
 ts-compile:
-	npx tsc --target es2015 --module commonjs
+	npx tsc
 
 ts-watch:
-	npx tsc --target es2015 --module commonjs --watch
+	npx tsc --watch
 
 ts-clean:
 	rm -rf js/*.js js/*.d.ts js/*.js.map 
