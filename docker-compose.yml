@@ -5,21 +5,11 @@ services:
       context: .
       dockerfile: Dockerfile
     image: nolang-bot:latest
-    env_file: .env               # 環境変数ファイル（.env.exampleをコピーして作成）
     ports:
-      - "8001:8001"
+      - "3000:3000"
     volumes:
       - .:/home/user/nolang-bot        # ホットリロード用
       - ~/.gitconfig:/home/user/.gitconfig:ro
-      - ~/.claude:/root/.claude:ro
     command: /bin/bash           # 開発用にbashを起動
     stdin_open: true             # docker run -i
     tty: true                    # docker run -t
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_PASSWORD: example
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-volumes:
-  pgdata:

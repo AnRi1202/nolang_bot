@@ -1,91 +1,99 @@
 # 🤖 NoLang Support Bot
 
-NoLangのサポート問い合わせに自動対応するRAGベースのチャットボットです。
+NoLangのサポート問い合わせに自動対応するGoogle Apps Scriptベースのチャットボットです。
 
 ## 🚀 特徴
 
-- **RAGベースの正確な回答**: FAQデータベースに基づいた正確な情報提供
-- **Google Sheets連携**: 簡単にFAQデータを管理・更新
-- **Webインターフェース**: ブラウザから直接利用可能
-- **RESTful API**: 外部システムとの連携も可能
+- **Google Apps Script**: Google SheetsとGmailの自動連携
+- **自動メッセージ処理**: Gmailの受信メッセージを自動でスプレッドシートに記録
+- **チケット管理**: 問い合わせをチケットとして管理
+- **フォーム連携**: Google Formsからの問い合わせを自動処理
 
 ## 🛠️ セットアップ
 
 ### 1. 依存関係のインストール
 
 ```bash
-poetry install
+npm install
 ```
 
-### 2. 環境変数の設定
+### 2. Google Apps Script の設定
 
-`.env`ファイルを作成：
+1. [Google Apps Script](https://script.google.com/) にアクセス
+2. 新しいプロジェクトを作成
+3. 以下のファイルをアップロード：
+   - `dist/onFormSubmit.js`
+   - `dist/updateContactMessage.js`
+   - `dist/updateTicket.js`
+   - `dist/uploadMessagesToDifyAsCsv.js`
+   - `dist/appsscript.json`
 
-```env
-OPENAI_API_KEY=your-openai-api-key-here
-```
+### 3. スプレッドシートの設定
 
-### 3. サーバー起動
-
-```bash
-python embed.py  # インデックス構築
-python server.py # サーバー起動
-```
+以下のシートを作成：
+- **CONTACTS**: 連絡先情報
+- **MESSAGES**: メッセージ履歴
+- **TICKETS**: チケット管理
 
 ## 🌐 使用方法
 
-### Web インターフェース
+### Google Apps Script の実行
 
-1. ブラウザで `http://localhost:8000` にアクセス
-2. 質問を入力して「質問する」ボタンをクリック
+1. `updateContactMessage()` 関数を実行してGmailメッセージを処理
+2. `updateTicket()` 関数を実行してチケットを更新
+3. Google Formsの送信時に `onFormSubmit()` が自動実行
 
-### API エンドポイント
+### 手動実行
 
 ```bash
-# 質問を送信
-curl -X POST "http://localhost:8000/ask" \
-  -H "Content-Type: application/json" \
-  -d '{"question": "NoLangとはなんですか？", "email": "user@example.com"}'
+# TypeScriptファイルをコンパイル
+make ts-compile
 
-# 健康状態確認
-curl http://localhost:8000/health
+# Google Apps Scriptにプッシュ
+make clasp-push
 ```
 
 ## 📁 ファイル構成
 
 ```
 nolang-bot/
-├── loader.py          # Google Sheets データローダー
-├── embed.py           # 埋め込みベクトル生成・FAISSインデックス構築
-├── server.py          # FastAPI サーバー
-├── setup.py           # セットアップスクリプト
-├── ts/                # TypeScriptファイル（Google Apps Script用）
-└── dist/              # コンパイル済みJavaScriptファイル
+├── ts/                    # TypeScriptソースファイル
+├── dist/                  # コンパイル済みJavaScriptファイル
+│   ├── onFormSubmit.js
+│   ├── updateContactMessage.js
+│   ├── updateTicket.js
+│   ├── uploadMessagesToDifyAsCsv.js
+│   └── appsscript.json
+├── docs/                  # ドキュメント
+└── Makefile              # ビルドスクリプト
 ```
 
-## 🎯 FAQ データの形式
+## 🎯 機能
 
-Google Sheets には以下の列が必要です：
+### メッセージ処理
+- Gmailの受信メッセージを自動でスプレッドシートに記録
+- 連絡先情報の自動更新
+- チケットとの自動紐付け
 
-| 列名 | 説明 | 必須 |
-|------|------|------|
-| Question | 質問文 | ✅ |
-| Answer | 回答文 | ✅ |
-| Tag | カテゴリタグ | ✅ |
-| UpdatedAt | 更新日時 | ✅ |
+### フォーム処理
+- Google Formsからの問い合わせを自動処理
+- スプレッドシートへの自動記録
 
-## 🐳 Docker での実行
+## 🐳 Docker での開発
 
 ```bash
-docker build -t nolang-bot .
-docker run -p 8000:8000 -e OPENAI_API_KEY="your-api-key" nolang-bot
+# 開発環境の起動
+docker-compose up
+
+# コンテナ内で作業
+docker-compose exec app bash
 ```
 
 ## 🔍 トラブルシューティング
 
-- **OpenAI API エラー**: API キーが正しく設定されているか確認
-- **インデックスが見つからない**: `python embed.py` を実行
-- **依存関係エラー**: `poetry install` を実行
+- **Clasp認証エラー**: `make clasp-login` を実行
+- **TypeScriptコンパイルエラー**: `make ts-compile` を実行
+- **Google Apps Scriptエラー**: 権限設定を確認
 
 ## 📄 ライセンス
 

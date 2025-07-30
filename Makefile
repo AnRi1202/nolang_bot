@@ -1,4 +1,4 @@
-.PHONY: install format lint test clean run help dev-install ts-compile ts-watch ts-clean
+.PHONY: install format lint test clean help dev-install ts-compile ts-watch ts-clean
 
 # Variables
 PYTHON = python
@@ -16,7 +16,6 @@ help:
 	@echo "  lint-fix    - Lint and fix code using ruff"
 	@echo "  test        - Run tests"
 	@echo "  clean       - Clean up generated files"
-	@echo "  run         - Run the server"
 	@echo "  build       - Build the project"
 	@echo "  docker-build - Build Docker image"
 	@echo "  docker-run  - Run Docker container"
@@ -59,7 +58,7 @@ lint-fix:
 
 # Run tests
 test:
-	$(POETRY) run python -m pytest test_cli.py -v
+	$(POETRY) run python -m pytest -v
 
 # Clean up generated files
 clean:
@@ -72,14 +71,6 @@ clean:
 	rm -rf htmlcov/
 	rm -rf dist/
 	rm -rf build/
-
-# Run the server
-run:
-	$(POETRY) run python server.py
-
-# Run with uvicorn (alternative)
-run-uvicorn:
-	$(POETRY) run uvicorn server:app --reload --host 127.0.0.1 --port 8000
 
 # Build the project
 build:
@@ -108,11 +99,7 @@ check: format lint test
 # Setup project (initial setup)
 setup:
 	@echo "Setting up NoLang Bot..."
-	@if [ ! -f "sa.json" ]; then \
-		echo "Warning: sa.json not found. Using sample data."; \
-	fi
-	$(POETRY) run python embed.py
-	@echo "Setup complete! Run 'make run' to start the server."
+	@echo "Setup complete! Run 'make ts-compile' to compile TypeScript files."
 
 # Clasp commands (Google Apps Script)
 clasp-login:
@@ -150,4 +137,4 @@ ts-watch:
 	npx tsc --watch
 
 ts-clean:
-	rm -rf js/*.js js/*.d.ts js/*.js.map 
+	rm -rf dist/*.js dist/*.d.ts dist/*.js.map 

@@ -1,24 +1,12 @@
 [tool.poetry]
 name = "nolang-bot"
 version = "0.1.0"
-description = "A bot project"
+description = "Google Apps Script based support bot"
 authors = ["Your Name <your.email@example.com>"]
 package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
-fastapi = "^0.104.0"
-uvicorn = "^0.24.0"
-gspread = "^6.0.0"
-pandas = "^2.1.0"
-google-auth = "^2.23.0"
-openai = "^1.0.0"
-tqdm = "^4.66.0"
-numpy = "^1.26.0"
-pydantic = "^2.0.0"
-scikit-learn = "^1.3.0"
-requests = "^2.31.0"
-beautifulsoup4 = "^4.12.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.12.0"
