@@ -1,7 +1,5 @@
-/**
- * フォーム送信トリガー
- * @param {GoogleAppsScript.Events.SheetsOnFormSubmit} e
- */
+//google formが送信された際、difyを経由して回答をgmailの下書きに溜める。
+//現状使っていない。onFormSubmitForSheetが使われてる。
 function onFormSubmit(e) {
     const DEBUG = true;                           // ← false にすれば静かに動作
     const sheet   = e.range.getSheet();
@@ -30,12 +28,41 @@ function onFormSubmit(e) {
     // 4) Dify 呼び出し
     const difyApiKey = PropertiesService.getScriptProperties()
                        .getProperty('DIFY_API_KEY');
+    // 4.1) video_urlの抽出
+    const VIDEO_URL_KEYS = [
+      '問題が発生している動画の URL もしくは編集画面の URL',
+      '該当の動画の URL'
+    ];
+    let videoUrl = '';
+    for (const key of VIDEO_URL_KEYS) {
+      if (kvPairs[key]) {                
+        videoUrl = kvPairs[key];
+        break;
+      }
+    }
+    if (!videoUrl) {
+      const autoKey = Object.keys(kvPairs)
+        .find(k => /動画.*URL/i.test(k)); // 「動画 … URL」を含む列
+      if (autoKey) videoUrl = kvPairs[autoKey];
+    }
+  
+  
+  
+    /* 4-b) payload を組み立て */
     const payload = {
-      inputs: { category, form_data: JSON.stringify(kvPairs) },
-      query : prompt,
-      user  : email,
+      inputs: {
+        category,
+        form_data: JSON.stringify(kvPairs)
+      },
+      query: prompt,
+      user:  email,
       response_mode: 'blocking'
     };
+    // 4-c) URL が取得できた場合のみ追加
+    if (videoUrl) {
+      payload.inputs.video_url = videoUrl;   // ← API 側で期待するキー名に合わせる
+    }
+  
     if (DEBUG) Logger.log('[4] payload\n' + JSON.stringify(payload, null, 2));
   
     let res, body, replyText;

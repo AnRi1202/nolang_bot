@@ -4,7 +4,8 @@
 PYTHON = python
 POETRY = poetry
 RUFF = ruff
-CLASP = clasp
+CLASP_PROJECT ?= form
+CLASP_DIR := clasp/$(CLASP_PROJECT)
 
 # Default target
 help:
@@ -103,31 +104,11 @@ setup:
 
 # Clasp commands (Google Apps Script)
 clasp-login:
-	npx $(CLASP) login
-
-clasp-create:
-	npx $(CLASP) create --type standalone
+	npx clasp login
 
 clasp-push:
-	npx $(CLASP) push
+	cd $(CLASP_DIR) && npx clasp push
 
-clasp-pull:
-	npx $(CLASP) pull
-
-clasp-deploy:
-	npx $(CLASP) deploy
-
-clasp-open:
-	npx $(CLASP) open
-
-clasp-list:
-	npx $(CLASP) list
-
-clasp-clone:
-	npx $(CLASP) clone
-
-clasp-watch:
-	npx $(CLASP) push --watch
 
 # TypeScript commands
 ts-compile:
