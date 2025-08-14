@@ -7,36 +7,6 @@ RUFF = ruff
 CLASP_PROJECT ?= form
 CLASP_DIR := clasp/$(CLASP_PROJECT)
 
-# Default target
-help:
-	@echo "Available commands:"
-	@echo "  install     - Install dependencies using Poetry"
-	@echo "  dev-install - Install development dependencies"
-	@echo "  format      - Format code using ruff"
-	@echo "  lint        - Lint code using ruff"
-	@echo "  lint-fix    - Lint and fix code using ruff"
-	@echo "  test        - Run tests"
-	@echo "  clean       - Clean up generated files"
-	@echo "  build       - Build the project"
-	@echo "  docker-build - Build Docker image"
-	@echo "  docker-run  - Run Docker container"
-	@echo ""
-	@echo "Clasp commands (Google Apps Script):"
-	@echo "  clasp-login  - Login to Google Apps Script"
-	@echo "  clasp-create - Create new Apps Script project"
-	@echo "  clasp-push   - Push code to Apps Script"
-	@echo "  clasp-pull   - Pull code from Apps Script"
-	@echo "  clasp-deploy - Deploy Apps Script"
-	@echo "  clasp-open   - Open Apps Script in browser"
-	@echo "  clasp-list   - List Apps Script projects"
-	@echo "  clasp-clone  - Clone existing Apps Script"
-	@echo "  clasp-watch  - Watch and auto-push changes"
-	@echo ""
-	@echo "TypeScript commands:"
-	@echo "  ts-compile   - Compile TypeScript to JavaScript"
-	@echo "  ts-watch     - Watch TypeScript files and auto-compile"
-	@echo "  ts-clean     - Clean compiled JavaScript files"
-
 # Install dependencies
 install:
 	$(POETRY) install --no-dev
@@ -73,49 +43,9 @@ clean:
 	rm -rf dist/
 	rm -rf build/
 
-# Build the project
-build:
-	$(POETRY) build
-
-# Docker commands
-docker-build:
-	docker build -t nolang-bot .
-
-docker-run:
-	docker-compose up
-
-docker-down:
-	docker-compose down
-
-# Development workflow
-dev: dev-install format lint-fix test
-
-# CI workflow
-ci: install lint test
-
-# Full check before commit
-check: format lint test
-	@echo "All checks passed!"
-
-# Setup project (initial setup)
-setup:
-	@echo "Setting up NoLang Bot..."
-	@echo "Setup complete! Run 'make ts-compile' to compile TypeScript files."
-
 # Clasp commands (Google Apps Script)
 clasp-login:
 	npx clasp login
 
 clasp-push:
 	cd $(CLASP_DIR) && npx clasp push
-
-
-# TypeScript commands
-ts-compile:
-	npx tsc
-
-ts-watch:
-	npx tsc --watch
-
-ts-clean:
-	rm -rf dist/*.js dist/*.d.ts dist/*.js.map 
